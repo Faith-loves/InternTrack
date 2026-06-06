@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-*/
+.env
+*.log
+.tmp-tests/
+.npm-cache/
+backend/npm-cache/
+frontend/npm-cache/
+
+backend/uploads/*
+!backend/uploads/.gitkeep

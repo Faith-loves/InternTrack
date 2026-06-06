@@ -1,0 +1,32 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" fill="#ffffff"/>
+  <rect x="64" y="40" width="48" height="48" rx="8" fill="#020617"/>
+  <text x="82" y="72" font-family="Arial, sans-serif" font-size="24" font-weight="800" fill="#34d399">I</text>
+  <text x="128" y="71" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">InternTrack</text>
+  <text x="968" y="70" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#475569">Login</text>
+  <rect x="1032" y="48" width="112" height="40" rx="6" fill="#059669"/>
+  <text x="1053" y="73" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Get started</text>
+  <text x="72" y="230" font-family="Arial, sans-serif" font-size="58" font-weight="900" fill="#020617">Organize every internship</text>
+  <text x="72" y="296" font-family="Arial, sans-serif" font-size="58" font-weight="900" fill="#020617">application in one calm</text>
+  <text x="72" y="362" font-family="Arial, sans-serif" font-size="58" font-weight="900" fill="#020617">workspace.</text>
+  <text x="74" y="425" font-family="Arial, sans-serif" font-size="22" fill="#475569">Track companies, applications, interviews, documents,</text>
+  <text x="74" y="458" font-family="Arial, sans-serif" font-size="22" fill="#475569">and progress without losing details.</text>
+  <rect x="74" y="506" width="172" height="48" rx="6" fill="#059669"/>
+  <text x="100" y="536" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Create free account</text>
+  <rect x="264" y="506" width="92" height="48" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="286" y="536" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a">Sign in</text>
+  <rect x="720" y="174" width="390" height="408" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="750" y="224" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#64748b">Application snapshot</text>
+  <text x="750" y="262" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#0f172a">This week</text>
+  <rect x="990" y="210" width="86" height="30" rx="15" fill="#dcfce7"/>
+  <text x="1007" y="230" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#15803d">On track</text>
+  <rect x="750" y="304" width="330" height="74" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="770" y="336" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#0f172a">Product Design Intern</text>
+  <text x="770" y="360" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Nova Labs</text>
+  <rect x="750" y="394" width="330" height="74" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="770" y="426" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#0f172a">Frontend Intern</text>
+  <text x="770" y="450" font-family="Arial, sans-serif" font-size="14" fill="#64748b">BrightStack</text>
+  <rect x="750" y="484" width="330" height="74" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="770" y="516" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#0f172a">Data Analyst Intern</text>
+  <text x="770" y="540" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Metricly</text>
+</svg>

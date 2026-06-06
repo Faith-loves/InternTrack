@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+.aurora-sweep {
+  background:
+    linear-gradient(118deg, transparent 10%, rgba(52, 211, 153, 0.22) 28%, transparent 45%),
+    linear-gradient(132deg, transparent 22%, rgba(56, 189, 248, 0.16) 48%, transparent 70%),
+    linear-gradient(96deg, rgba(15, 23, 42, 0.2), rgba(20, 184, 166, 0.16), rgba(15, 23, 42, 0.2));
+  background-size: 160% 160%;
+  animation: aurora-pan 13s ease-in-out infinite alternate;
+}
+
+.animate-rise {
+  animation: rise-in 720ms ease-out both;
+}
+
+.animate-float {
+  animation: float-panel 6s ease-in-out infinite;
+}
+
+.home-wave {
+  background:
+    linear-gradient(168deg, transparent 0 40%, rgba(5, 150, 105, 0.96) 40.3% 100%),
+    linear-gradient(172deg, transparent 0 47%, rgba(16, 185, 129, 0.72) 47.4% 100%);
+}
+
+.dashboard-preview {
+  animation: dashboard-enter 780ms ease-out both;
+}
+
+.timeline-dot {
+  animation: timeline-pop 600ms ease-out both;
+}
+
+.bar-rise {
+  animation: bar-rise 720ms ease-out both;
+  transform-origin: bottom;
+}
+
+.brand-mark {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(45deg);
+  border: 3px solid #34d399;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 28px rgba(52, 211, 153, 0.2);
+}
+
+.brand-mark span {
+  height: 0.75rem;
+  width: 0.75rem;
+  border: 2px solid #34d399;
+  border-left-color: transparent;
+  border-radius: 0.15rem;
+}
+
+.mini-brand-mark {
+  height: 1rem;
+  width: 1rem;
+  transform: rotate(45deg);
+  border: 2px solid #34d399;
+  border-radius: 0.15rem;
+}
+
+.sparkle-icon {
+  position: relative;
+  height: 1rem;
+  width: 1rem;
+}
+
+.sparkle-icon::before,
+.sparkle-icon::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: #5eead4;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.sparkle-icon::after {
+  transform: scale(0.42) translate(120%, -70%);
+  opacity: 0.7;
+}
+
+.ribbon-wave {
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(
+      172deg,
+      rgba(20, 184, 166, 0) 0 8px,
+      rgba(20, 184, 166, 0.22) 9px 10px,
+      rgba(20, 184, 166, 0) 11px 18px
+    );
+  filter: drop-shadow(0 0 32px rgba(20, 184, 166, 0.42));
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+  animation: ribbon-drift 12s ease-in-out infinite alternate;
+}
+
+.ribbon-wave-top {
+  transform: rotate(-14deg) skewX(-18deg);
+}
+
+.ribbon-wave-bottom {
+  transform: rotate(-9deg) skewX(-20deg);
+}
+
+.hero-dashboard-wrap {
+  perspective: 1400px;
+}
+
+.hero-dashboard {
+  position: relative;
+  display: flex;
+  min-height: 34rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(135deg, rgba(15, 31, 48, 0.94), rgba(6, 19, 31, 0.94)),
+    linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(59, 130, 246, 0.08));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: rotateY(-10deg) rotateZ(4deg);
+  transform-origin: center;
+  animation: dashboard-hover 7s ease-in-out infinite;
+}
+
+.glass-panel {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, rgba(15, 31, 48, 0.74), rgba(8, 23, 37, 0.68));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 35px rgba(0, 0, 0, 0.18);
+}
+
+.timeline-line {
+  background: linear-gradient(90deg, #21d18f, #22d3ee, #3b82f6, #8b5cf6);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.35);
+}
+
+@keyframes ribbon-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 180px 0;
+  }
+}
+
+@keyframes dashboard-hover {
+  0%,
+  100% {
+    transform: rotateY(-10deg) rotateZ(4deg) translateY(0);
+  }
+  50% {
+    transform: rotateY(-8deg) rotateZ(4deg) translateY(-10px);
+  }
+}
+
+@keyframes aurora-pan {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-panel {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes dashboard-enter {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes timeline-pop {
+  from {
+    transform: scale(0.78);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-sweep,
+  .animate-rise,
+  .animate-float,
+  .dashboard-preview,
+  .timeline-dot,
+  .bar-rise,
+  .ribbon-wave,
+  .hero-dashboard {
+    animation: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-dashboard {
+    transform: none;
+  }
+}
