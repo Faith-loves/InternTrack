@@ -6,11 +6,9 @@ import './index.css'
 import App from './App.jsx'
 import queryClient from './components/queryClient'
 import { ToastProvider } from './components'
-import { clearSession, isDemoSession } from './utils/authStorage'
 
 const navigationEntry = performance.getEntriesByType('navigation')[0]
-if (isDemoSession() && navigationEntry?.type === 'reload') {
-  clearSession()
+if (navigationEntry?.type === 'reload') {
   window.history.replaceState(null, '', '/')
 }
 createRoot(document.getElementById('root')).render(
@@ -24,4 +22,5 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
 
