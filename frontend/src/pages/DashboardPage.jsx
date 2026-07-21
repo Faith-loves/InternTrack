@@ -13,7 +13,7 @@ import { applicationService } from '../services/applicationService'
 import { getApiErrorMessage } from '../services/api'
 import { documentService } from '../services/documentService'
 import { interviewService } from '../services/interviewService'
-import { getStoredUser } from '../utils/authStorage'
+import { getStoredUser, isDemoSession } from '../utils/authStorage'
 import {
   APPLICATION_STATUSES,
   formatDate,
@@ -33,9 +33,21 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [user, setUser] = useState(() => getStoredUser())
+  const [isDemo, setIsDemo] = useState(() => isDemoSession())
 
   useEffect(() => {
     async function fetchDashboard() {
+      if (isDemoSession()) {
+        setIsDemo(true)
+        setAnalytics(demoAnalytics)
+        setApplications(demoApplications)
+        setInterviews(demoInterviews)
+        setDocuments(demoDocuments)
+        setUser(getStoredUser())
+        setLoading(false)
+        return
+      }
+
       try {
         const [analyticsResponse, applicationsResponse, interviewsResponse, documentsResponse] = await Promise.all([
           analyticsService.get(),
@@ -61,15 +73,16 @@ function DashboardPage() {
   if (loading) return <DashboardSkeleton />
   if (error) return <EmptyState title="Could not load dashboard" message={error} />
 
-  const hasApplications = applications.length > 0
-  const hasInterviews = interviews.length > 0
-  const hasDocuments = documents.length > 0
-  const visibleApplications = hasApplications ? applications : demoApplications
-  const visibleInterviews = hasInterviews ? interviews : demoInterviews
-  const visibleDocuments = hasDocuments ? documents : demoDocuments
+  const hasApplications = !isDemo && applications.length > 0
+  const hasInterviews = !isDemo && interviews.length > 0
+  const hasDocuments = !isDemo && documents.length > 0
+  const isShowingDemoData = isDemo || !hasApplications
+  const visibleApplications = isDemo ? demoApplications : hasApplications ? applications : demoApplications
+  const visibleInterviews = isDemo ? demoInterviews : hasInterviews ? interviews : demoInterviews
+  const visibleDocuments = isDemo ? demoDocuments : hasDocuments ? documents : demoDocuments
 
   const today = getPlainDate(new Date())
-  const reminders = applications.filter((application) => {
+  const reminders = visibleApplications.filter((application) => {
     if (application.followUpDate) {
       const followUpDate = getPlainDate(application.followUpDate)
       if (
@@ -99,15 +112,15 @@ function DashboardPage() {
         },
       ]
 
-  const upcomingInterviews = interviews.filter((interview) => isToday(interview.date) || isThisWeek(interview.date))
+  const upcomingInterviews = visibleInterviews.filter((interview) => isToday(interview.date) || isThisWeek(interview.date))
   const interviewsToShow = upcomingInterviews.length ? upcomingInterviews : visibleInterviews
 
-  const totalApplications = hasApplications ? applications.length : demoAnalytics.totalApplications
-  const interviewsScheduled = hasInterviews ? interviews.length : demoAnalytics.interviews
+  const totalApplications = isShowingDemoData ? demoAnalytics.totalApplications : applications.length
+  const interviewsScheduled = isDemo || !hasInterviews ? demoAnalytics.interviews : interviews.length
   const offersReceived = hasApplications
     ? applications.filter((application) => application.status === APPLICATION_STATUSES.OFFER).length
     : demoAnalytics.offers
-  const followUpsDue = hasApplications ? reminders.length : demoAnalytics.followUpsDue
+  const followUpsDue = isShowingDemoData ? demoAnalytics.followUpsDue : reminders.length
 
   const statCards = [
     ['Total Applications', totalApplications, 'bg-emerald-50 text-emerald-700 border-emerald-100'],
@@ -125,9 +138,9 @@ function DashboardPage() {
     ['Rejected', APPLICATION_STATUSES.REJECTED],
   ]
 
-  const responseRate = hasApplications ? analytics?.responseRate || 0 : demoAnalytics.responseRate
-  const offerRate = hasApplications ? analytics?.offerRate || 0 : demoAnalytics.offerRate
-  const interviewRate = hasApplications ? analytics?.interviewConversionRate || 0 : demoAnalytics.interviewConversionRate
+  const responseRate = isShowingDemoData ? demoAnalytics.responseRate : analytics?.responseRate || 0
+  const offerRate = isShowingDemoData ? demoAnalytics.offerRate : analytics?.offerRate || 0
+  const interviewRate = isShowingDemoData ? demoAnalytics.interviewConversionRate : analytics?.interviewConversionRate || 0
 
   const quickActions = [
     ['Add Application', 'Save a new role, recruiter, date, and status.', '/applications/add', 'bg-emerald-500'],
@@ -157,7 +170,17 @@ function DashboardPage() {
         </div>
       </section>
 
-      {!hasApplications && (
+      {isDemo ? (
+        <Card className="border-emerald-100 bg-emerald-50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-black text-slate-950">Recruiter demo workspace</h2>
+              <p className="mt-1 text-sm text-emerald-800">This dashboard is preloaded with applications, interviews, CV usage, reminders, and analytics that stay in sync.</p>
+            </div>
+            <Badge tone="success">Demo data</Badge>
+          </div>
+        </Card>
+      ) : !hasApplications && (
         <Card className="border-emerald-100 bg-white p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -187,7 +210,7 @@ function DashboardPage() {
               <h2 className="text-lg font-black text-slate-950">Recent applications</h2>
               <p className="mt-1 text-sm text-slate-500">Your newest opportunities and current statuses.</p>
             </div>
-            {!hasApplications && <Badge tone="info">Sample preview</Badge>}
+            {isShowingDemoData && <Badge tone="info">Sample preview</Badge>}
           </div>
           <Table
             columns={['Company', 'Role', 'Status', 'Follow-up', 'Action']}
@@ -236,7 +259,7 @@ function DashboardPage() {
             <h2 className="text-lg font-black text-slate-950">Application status board</h2>
             <p className="mt-1 text-sm text-slate-500">See where every application currently sits.</p>
           </div>
-          {!hasApplications && <Badge tone="info">Sample board</Badge>}
+          {isShowingDemoData && <Badge tone="info">Sample board</Badge>}
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           {statusColumns.map(([label, status]) => {
@@ -271,7 +294,7 @@ function DashboardPage() {
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-black text-slate-950">Upcoming interviews</h2>
-            {!hasInterviews && <Badge tone="info">Sample</Badge>}
+            {(isDemo || !hasInterviews) && <Badge tone="info">Sample</Badge>}
           </div>
           <div className="space-y-3">
             {interviewsToShow.length ? (
@@ -314,7 +337,7 @@ function DashboardPage() {
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-black text-slate-950">CV manager preview</h2>
-            {!hasDocuments && <Badge tone="info">Sample</Badge>}
+            {(isDemo || !hasDocuments) && <Badge tone="info">Sample</Badge>}
           </div>
           <div className="space-y-3">
             {visibleDocuments.slice(0, 4).map((document) => (
@@ -336,7 +359,7 @@ function DashboardPage() {
             <h2 className="text-lg font-black text-slate-950">Analytics preview</h2>
             <p className="mt-1 text-sm text-slate-500">A quick read on how your pipeline is performing.</p>
           </div>
-          {!hasApplications && <Badge tone="info">Sample analytics</Badge>}
+          {isShowingDemoData && <Badge tone="info">Sample analytics</Badge>}
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {[

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import Loader from './Loader'
 import { authService } from '../services/authService'
-import { clearSession, getStoredRefreshToken, getStoredToken, saveSession, updateStoredUser } from '../utils/authStorage'
+import { clearSession, getStoredRefreshToken, getStoredToken, isDemoSession, saveSession, updateStoredUser } from '../utils/authStorage'
 
 function ProtectedRoute() {
   const location = useLocation()
@@ -12,6 +12,12 @@ function ProtectedRoute() {
   useEffect(() => {
     async function refreshUser() {
       const token = getStoredToken()
+
+      if (isDemoSession() && token) {
+        setIsAuthenticated(true)
+        setCheckingSession(false)
+        return
+      }
 
       if (!token && getStoredRefreshToken()) {
         try {

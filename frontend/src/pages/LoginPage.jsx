@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Input } from '../components'
 import { getApiErrorMessage } from '../services/api'
 import { authService } from '../services/authService'
-import { saveSession } from '../utils/authStorage'
+import { saveDemoSession, saveSession } from '../utils/authStorage'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -41,7 +41,10 @@ function LoginPage() {
   }
 
   function handleDemoLogin() {
-    return finishLogin(() => authService.demoLogin())
+    setLoading(true)
+    setError('')
+    saveDemoSession()
+    navigate('/dashboard')
   }
 
   return (

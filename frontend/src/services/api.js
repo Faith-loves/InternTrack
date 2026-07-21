@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { clearSession, getStoredRefreshToken, getStoredToken, saveSession } from '../utils/authStorage'
+import { clearSession, getStoredRefreshToken, getStoredToken, isDemoSession, saveSession } from '../utils/authStorage'
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
@@ -24,6 +24,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+
+    if (error.response?.status === 401 && isDemoSession()) {
+      return Promise.reject(error)
+    }
 
     if (error.response?.status === 401 && !originalRequest?._retry) {
       const refreshToken = getStoredRefreshToken()

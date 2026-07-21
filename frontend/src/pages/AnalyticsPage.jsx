@@ -3,15 +3,24 @@ import { Card, EmptyState, Loader } from '../components'
 import { analyticsService } from '../services/analyticsService'
 import { getApiErrorMessage } from '../services/api'
 import { getStatusLabel, statusOptions } from '../utils/applications'
+import { isDemoSession } from '../utils/authStorage'
 import { demoAnalytics } from '../utils/demoData'
 
 function AnalyticsPage() {
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isDemo, setIsDemo] = useState(() => isDemoSession())
 
   useEffect(() => {
     async function fetchAnalytics() {
+      if (isDemoSession()) {
+        setIsDemo(true)
+        setAnalytics(demoAnalytics)
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await analyticsService.get()
         setAnalytics(data)
@@ -28,8 +37,8 @@ function AnalyticsPage() {
   if (loading) return <Loader label="Loading analytics" />
   if (error) return <EmptyState title="Could not load analytics" message={error} />
 
-  const hasAnalyticsData = Boolean(analytics?.totalApplications)
-  const visibleAnalytics = hasAnalyticsData ? analytics : demoAnalytics
+  const hasAnalyticsData = !isDemo && Boolean(analytics?.totalApplications)
+  const visibleAnalytics = isDemo || !hasAnalyticsData ? demoAnalytics : analytics
   const totalApplications = visibleAnalytics.totalApplications || 0
   const pipelineRows = statusOptions.map((option) => {
     const count = visibleAnalytics.statusBreakdown?.[option.value] || 0
@@ -45,10 +54,10 @@ function AnalyticsPage() {
         <p className="mt-1 text-sm text-slate-500">Understand your application progress and response rate.</p>
       </div>
 
-      {!hasAnalyticsData && (
+      {(isDemo || !hasAnalyticsData) && (
         <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-sm font-semibold text-emerald-900">Demo analytics are showing so this page has useful data.</p>
-          <p className="mt-1 text-sm text-emerald-700">Create real applications, interviews, and documents to replace these sample insights.</p>
+          <p className="text-sm font-semibold text-emerald-900">Demo analytics are showing so recruiters can review a populated workspace.</p>
+          <p className="mt-1 text-sm text-emerald-700">Applications, interviews, CV usage, and response metrics are synchronized with the recruiter demo data.</p>
         </div>
       )}
 
@@ -111,7 +120,7 @@ function AnalyticsPage() {
             {(visibleAnalytics.bestPerformingCVs || []).slice(0, 5).map((item) => (
               <div key={item.cv} className="rounded-lg border border-slate-200 p-3">
                 <p className="font-medium text-slate-950">{item.cv}</p>
-                <p className="mt-1 text-sm text-slate-500">{item.responseRate}% response rate · {item.applications} applications</p>
+                <p className="mt-1 text-sm text-slate-500">{item.responseRate}% response rate - {item.applications} applications</p>
               </div>
             ))}
           </div>
@@ -123,7 +132,7 @@ function AnalyticsPage() {
             {(visibleAnalytics.companyResponseRankings || []).slice(0, 5).map((item) => (
               <div key={item.company} className="rounded-lg border border-slate-200 p-3">
                 <p className="font-medium text-slate-950">{item.company}</p>
-                <p className="mt-1 text-sm text-slate-500">{item.responseRate}% response rate · {item.responses} responses</p>
+                <p className="mt-1 text-sm text-slate-500">{item.responseRate}% response rate - {item.responses} responses</p>
               </div>
             ))}
           </div>
