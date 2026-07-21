@@ -23,7 +23,6 @@ import {
   isThisWeek,
   isToday,
 } from '../utils/applications'
-import { demoApplications, demoDocuments, demoInterviews } from '../utils/demoData'
 import { getDemoAnalytics, getDemoFollowUps, getDemoWorkspace } from '../utils/demoWorkspace'
 
 function DashboardPage() {
@@ -75,13 +74,10 @@ function DashboardPage() {
   if (loading) return <DashboardSkeleton />
   if (error) return <EmptyState title="Could not load dashboard" message={error} />
 
-  const hasApplications = !isDemo && applications.length > 0
-  const hasInterviews = !isDemo && interviews.length > 0
-  const hasDocuments = !isDemo && documents.length > 0
-  const isShowingDemoData = isDemo || !hasApplications
-  const visibleApplications = isDemo ? applications : hasApplications ? applications : demoApplications
-  const visibleInterviews = isDemo ? interviews : hasInterviews ? interviews : demoInterviews
-  const visibleDocuments = isDemo ? documents : hasDocuments ? documents : demoDocuments
+  const hasApplications = applications.length > 0
+  const visibleApplications = applications
+  const visibleInterviews = interviews
+  const visibleDocuments = documents
   const recentApplications = [...visibleApplications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   const today = getPlainDate(new Date())
@@ -109,12 +105,12 @@ function DashboardPage() {
   const upcomingInterviews = visibleInterviews.filter((interview) => isToday(interview.date) || isThisWeek(interview.date))
   const interviewsToShow = upcomingInterviews.length ? upcomingInterviews : visibleInterviews
 
-  const totalApplications = isShowingDemoData ? analytics?.totalApplications || 0 : applications.length
-  const interviewsScheduled = isShowingDemoData ? analytics?.interviews || 0 : interviews.length
+  const totalApplications = applications.length
+  const interviewsScheduled = interviews.length
   const offersReceived = hasApplications
     ? applications.filter((application) => application.status === APPLICATION_STATUSES.OFFER).length
     : analytics?.offers || 0
-  const followUpsDue = isShowingDemoData ? analytics?.followUpsDue || 0 : reminders.length
+  const followUpsDue = isDemo ? analytics?.followUpsDue || 0 : reminders.length
 
   const statCards = [
     ['Total Applications', totalApplications, 'bg-emerald-50 text-emerald-700 border-emerald-100'],
@@ -179,7 +175,7 @@ function DashboardPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-black text-slate-950">No applications yet. Add your first application to start tracking.</h2>
-              <p className="mt-1 text-sm text-slate-500">The dashboard below shows sample data so you can see how InternTrack will look once you begin.</p>
+              <p className="mt-1 text-sm text-slate-500">Your saved applications, interviews, documents, follow-ups, and analytics will appear here.</p>
             </div>
             <Link to="/applications/add">
               <Button className="bg-emerald-600 text-white hover:bg-emerald-700">Add first application</Button>
@@ -204,7 +200,7 @@ function DashboardPage() {
               <h2 className="text-lg font-black text-slate-950">Recent applications</h2>
               <p className="mt-1 text-sm text-slate-500">Your newest opportunities and current statuses.</p>
             </div>
-            {isShowingDemoData && <Badge tone="info">Sample preview</Badge>}
+            {isDemo && <Badge tone="info">Demo</Badge>}
           </div>
           <Table
             columns={['Company', 'Role', 'Status', 'Follow-up', 'Action']}
@@ -253,7 +249,7 @@ function DashboardPage() {
             <h2 className="text-lg font-black text-slate-950">Application status board</h2>
             <p className="mt-1 text-sm text-slate-500">See where every application currently sits.</p>
           </div>
-          {isShowingDemoData && <Badge tone="info">Sample board</Badge>}
+          {isDemo && <Badge tone="info">Demo</Badge>}
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           {statusColumns.map(([label, status]) => {
@@ -288,7 +284,7 @@ function DashboardPage() {
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-black text-slate-950">Upcoming interviews</h2>
-            {(isDemo || !hasInterviews) && <Badge tone="info">Sample</Badge>}
+            {isDemo && <Badge tone="info">Demo</Badge>}
           </div>
           <div className="space-y-3">
             {interviewsToShow.length ? (
@@ -331,7 +327,7 @@ function DashboardPage() {
         <Card className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-black text-slate-950">CV manager preview</h2>
-            {(isDemo || !hasDocuments) && <Badge tone="info">Sample</Badge>}
+            {isDemo && <Badge tone="info">Demo</Badge>}
           </div>
           <div className="space-y-3">
             {visibleDocuments.slice(0, 4).map((document) => (
@@ -353,7 +349,7 @@ function DashboardPage() {
             <h2 className="text-lg font-black text-slate-950">Analytics preview</h2>
             <p className="mt-1 text-sm text-slate-500">A quick read on how your pipeline is performing.</p>
           </div>
-          {isShowingDemoData && <Badge tone="info">Sample analytics</Badge>}
+          {isDemo && <Badge tone="info">Demo</Badge>}
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {[
@@ -386,5 +382,7 @@ function DashboardPage() {
 }
 
 export default DashboardPage
+
+
 
 

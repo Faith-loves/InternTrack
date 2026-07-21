@@ -5,6 +5,19 @@ import { getApiErrorMessage } from '../services/api'
 import { getStatusLabel, statusOptions } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
 import { getDemoAnalytics, getDemoWorkspace } from '../utils/demoWorkspace'
+const emptyAnalytics = {
+  totalApplications: 0,
+  interviews: 0,
+  offers: 0,
+  rejections: 0,
+  responseRate: 0,
+  offerRate: 0,
+  interviewConversionRate: 0,
+  statusBreakdown: {},
+  monthlyApplications: [],
+  bestPerformingCVs: [],
+  companyResponseRankings: [],
+}
 
 function AnalyticsPage() {
   const [analytics, setAnalytics] = useState(null)
@@ -37,8 +50,7 @@ function AnalyticsPage() {
   if (loading) return <Loader label="Loading analytics" />
   if (error) return <EmptyState title="Could not load analytics" message={error} />
 
-  const hasAnalyticsData = !isDemo && Boolean(analytics?.totalApplications)
-  const visibleAnalytics = analytics || getDemoAnalytics(getDemoWorkspace())
+  const visibleAnalytics = analytics || emptyAnalytics
   const totalApplications = visibleAnalytics.totalApplications || 0
   const pipelineRows = statusOptions.map((option) => {
     const count = visibleAnalytics.statusBreakdown?.[option.value] || 0
@@ -54,7 +66,7 @@ function AnalyticsPage() {
         <p className="mt-1 text-sm text-slate-500">Understand your application progress and response rate.</p>
       </div>
 
-      {(isDemo || !hasAnalyticsData) && (
+      {isDemo && (
         <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
           <p className="text-sm font-semibold text-emerald-900">Demo analytics are showing so recruiters can review a populated workspace.</p>
           <p className="mt-1 text-sm text-emerald-700">Applications, interviews, CV usage, and response metrics are synchronized with the recruiter demo data.</p>
@@ -143,5 +155,8 @@ function AnalyticsPage() {
 }
 
 export default AnalyticsPage
+
+
+
 
 

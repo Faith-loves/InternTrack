@@ -3,7 +3,6 @@ import { Badge, Card, EmptyState, Loader } from '../components'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatDate } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
-import { demoNotifications } from '../utils/demoData'
 import { getDemoNotifications, getDemoWorkspace } from '../utils/demoWorkspace'
 
 const tones = {
@@ -16,7 +15,7 @@ const tones = {
 function NotificationsPage() {
   const { data: notifications = [], isLoading, error } = useNotifications()
   const isDemo = isDemoSession()
-  const visibleNotifications = isDemo ? getDemoNotifications(getDemoWorkspace()) : notifications.length ? notifications : demoNotifications
+  const visibleNotifications = isDemo ? getDemoNotifications(getDemoWorkspace()) : notifications
 
   return (
     <div className="space-y-5">
@@ -55,4 +54,5 @@ function NotificationsPage() {
 }
 
 export default NotificationsPage
+
 

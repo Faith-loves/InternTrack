@@ -5,7 +5,6 @@ import { getApiErrorMessage } from '../services/api'
 import { applicationService } from '../services/applicationService'
 import { applicationSourceOptions, formatDate, formatSalary, getStatusLabel, getStatusTone, statusOptions } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
-import { demoApplications } from '../utils/demoData'
 import { getDemoWorkspace } from '../utils/demoWorkspace'
 import { getSavedFilters, saveFilter } from '../utils/savedFilters'
 
@@ -58,8 +57,8 @@ function ApplicationsPage() {
     fetchApplications()
   }, [showToast])
 
-  const visibleApplications = isDemo ? applications : applications.length ? applications : demoApplications
-  const isShowingDemoData = isDemo || applications.length === 0
+  const visibleApplications = applications
+  const isShowingDemoData = isDemo
 
   const filteredApplications = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -136,8 +135,8 @@ function ApplicationsPage() {
 
       {isShowingDemoData && !loading && !error && (
         <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-sm font-semibold text-emerald-900">{isDemo ? 'Recruiter demo applications are showing from the same data used on the dashboard.' : 'Demo applications are showing so the product does not feel empty.'}</p>
-          <p className="mt-1 text-sm text-emerald-700">{isDemo ? 'Offers, interviews, deadlines, recruiter contacts, and follow-ups stay synchronized across the demo.' : 'Add your first real application and these examples will disappear automatically.'}</p>
+          <p className="text-sm font-semibold text-emerald-900">Recruiter demo applications are showing from the same data used on the dashboard.</p>
+          <p className="mt-1 text-sm text-emerald-700">Offers, interviews, deadlines, recruiter contacts, and follow-ups stay synchronized across the demo.</p>
         </div>
       )}
 
@@ -251,12 +250,13 @@ function ApplicationsPage() {
           </div>
         </>
       ) : (
-        <EmptyState title="No applications found" message="Try a different search term or status filter." />
+        <EmptyState title="No applications found" message="Add an application to start tracking your opportunities." />
       )}
     </div>
   )
 }
 
 export default ApplicationsPage
+
 
 

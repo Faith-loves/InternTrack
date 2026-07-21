@@ -7,7 +7,6 @@ import { getApiErrorMessage } from '../services/api'
 import { interviewService } from '../services/interviewService'
 import { formatDate } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
-import { demoApplications, demoInterviews } from '../utils/demoData'
 import { createDemoInterview, getDemoWorkspace, updateDemoInterview } from '../utils/demoWorkspace'
 
 function InterviewsPage() {
@@ -25,8 +24,8 @@ function InterviewsPage() {
   } = useForm()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  const visibleApplications = isDemo ? applications : applications.length ? applications : demoApplications
-  const visibleInterviews = isDemo ? interviews : interviews.length ? interviews : demoInterviews
+  const visibleApplications = applications
+  const visibleInterviews = interviews
 
   async function refreshData() {
     if (isDemoSession()) {
@@ -339,6 +338,7 @@ Best regards,`
 }
 
 export default InterviewsPage
+
 
 
 

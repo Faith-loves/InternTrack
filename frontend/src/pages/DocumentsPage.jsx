@@ -6,7 +6,6 @@ import { documentService } from '../services/documentService'
 import { formatDate } from '../utils/applications'
 import { useApplications } from '../hooks/useApplications'
 import { isDemoSession } from '../utils/authStorage'
-import { demoApplications, demoDocuments } from '../utils/demoData'
 import { createDemoDocument, deleteDemoDocument, getDemoWorkspace } from '../utils/demoWorkspace'
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024
@@ -26,8 +25,8 @@ function DocumentsPage() {
   } = useForm({ defaultValues: { documentType: 'CV' } })
   const { showToast } = useToast()
   const { data: applications = [] } = useApplications()
-  const visibleApplications = isDemo ? getDemoWorkspace().applications : applications.length ? applications : demoApplications
-  const visibleDocuments = isDemo ? documents : documents.length ? documents : demoDocuments
+  const visibleApplications = isDemo ? getDemoWorkspace().applications : applications
+  const visibleDocuments = documents
 
   async function refreshDocuments() {
     if (isDemoSession()) {
@@ -240,4 +239,5 @@ function DocumentsPage() {
 }
 
 export default DocumentsPage
+
 
