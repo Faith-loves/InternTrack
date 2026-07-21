@@ -4,7 +4,6 @@ import { analyticsService } from '../services/analyticsService'
 import { getApiErrorMessage } from '../services/api'
 import { getStatusLabel, statusOptions } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
-import { demoAnalytics } from '../utils/demoData'
 import { getDemoAnalytics, getDemoWorkspace } from '../utils/demoWorkspace'
 
 function AnalyticsPage() {
@@ -39,7 +38,7 @@ function AnalyticsPage() {
   if (error) return <EmptyState title="Could not load analytics" message={error} />
 
   const hasAnalyticsData = !isDemo && Boolean(analytics?.totalApplications)
-  const visibleAnalytics = isDemo || !hasAnalyticsData ? demoAnalytics : analytics
+  const visibleAnalytics = analytics || getDemoAnalytics(getDemoWorkspace())
   const totalApplications = visibleAnalytics.totalApplications || 0
   const pipelineRows = statusOptions.map((option) => {
     const count = visibleAnalytics.statusBreakdown?.[option.value] || 0
@@ -64,7 +63,7 @@ function AnalyticsPage() {
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
         {[
-          ['Total applications', visibleAnalytics.totalApplications || 0, 'Saved in MongoDB'],
+          ['Total applications', visibleAnalytics.totalApplications || 0, isDemo ? 'Saved in demo workspace' : 'Saved in MongoDB'],
           ['Interviews', visibleAnalytics.interviews || 0, 'Interview records'],
           ['Offers', visibleAnalytics.offers || 0, 'Applications marked offer'],
           ['Rejections', visibleAnalytics.rejections || 0, 'Applications marked rejected'],
@@ -144,4 +143,5 @@ function AnalyticsPage() {
 }
 
 export default AnalyticsPage
+
 
