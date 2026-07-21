@@ -6,6 +6,7 @@ import { applicationService } from '../services/applicationService'
 import { getApiErrorMessage } from '../services/api'
 import { interviewService } from '../services/interviewService'
 import { formatDate } from '../utils/applications'
+import { isDemoSession } from '../utils/authStorage'
 import { demoApplications, demoInterviews } from '../utils/demoData'
 
 function InterviewsPage() {
@@ -14,6 +15,7 @@ function InterviewsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isDemo, setIsDemo] = useState(() => isDemoSession())
   const {
     formState: { errors },
     handleSubmit,
@@ -22,11 +24,19 @@ function InterviewsPage() {
   } = useForm()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  const visibleApplications = applications.length ? applications : demoApplications
-  const visibleInterviews = interviews.length ? interviews : demoInterviews
-  const isDemo = interviews.length === 0
+  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
+  const visibleInterviews = isDemo ? demoInterviews : interviews.length ? interviews : demoInterviews
 
   async function refreshData() {
+    if (isDemoSession()) {
+      setIsDemo(true)
+      setInterviews(demoInterviews)
+      setApplications(demoApplications)
+      setError('')
+      setLoading(false)
+      return
+    }
+
     try {
       const [interviewResponse, applicationResponse] = await Promise.all([
         interviewService.getAll(),
@@ -43,6 +53,14 @@ function InterviewsPage() {
 
   useEffect(() => {
     async function fetchData() {
+      if (isDemoSession()) {
+        setIsDemo(true)
+        setInterviews(demoInterviews)
+        setApplications(demoApplications)
+        setLoading(false)
+        return
+      }
+
       try {
         const [interviewResponse, applicationResponse] = await Promise.all([
           interviewService.getAll(),
@@ -61,6 +79,13 @@ function InterviewsPage() {
   }, [])
 
   async function onSubmit(values) {
+    if (isDemo) {
+      const message = 'Demo interviews are read-only so recruiter preview data stays synchronized.'
+      setSuccess(message)
+      setError('')
+      showToast(message)
+      return
+    }
     const selectedApplication = visibleApplications.find((application) => application._id === values.applicationId)
     const payload = {
       applicationId: values.applicationId,
@@ -99,6 +124,10 @@ function InterviewsPage() {
   }
 
   async function updateInterview(id, updates) {
+    if (isDemo) {
+      showToast('Demo checklist is read-only')
+      return
+    }
     try {
       await interviewService.update(id, updates)
       showToast('Interview updated')
@@ -229,7 +258,7 @@ Best regards,`
             />
           </label>
           <div className="md:col-span-2">
-            <Button type="submit">Save interview</Button>
+            <Button type="submit">{isDemo ? 'Preview only' : 'Save interview'}</Button>
           </div>
         </form>
         {error && <p className="mt-4 text-sm font-medium text-rose-600">{error}</p>}

@@ -4,6 +4,7 @@ import { Badge, Button, EmptyState, Input, Select, Table, TableSkeleton, useToas
 import { getApiErrorMessage } from '../services/api'
 import { applicationService } from '../services/applicationService'
 import { applicationSourceOptions, formatDate, formatSalary, getStatusLabel, getStatusTone, statusOptions } from '../utils/applications'
+import { isDemoSession } from '../utils/authStorage'
 import { demoApplications } from '../utils/demoData'
 import { getSavedFilters, saveFilter } from '../utils/savedFilters'
 
@@ -18,6 +19,7 @@ function ApplicationsPage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isDemo, setIsDemo] = useState(() => isDemoSession())
   const [success] = useState(() => {
     const message = sessionStorage.getItem('successMessage')
     sessionStorage.removeItem('successMessage')
@@ -33,6 +35,13 @@ function ApplicationsPage() {
 
   useEffect(() => {
     async function fetchApplications() {
+      if (isDemoSession()) {
+        setIsDemo(true)
+        setApplications(demoApplications)
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await applicationService.getAll()
         setApplications(data)
@@ -48,8 +57,8 @@ function ApplicationsPage() {
     fetchApplications()
   }, [showToast])
 
-  const visibleApplications = applications.length ? applications : demoApplications
-  const isDemo = applications.length === 0
+  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
+  const isShowingDemoData = isDemo || applications.length === 0
 
   const filteredApplications = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -124,10 +133,10 @@ function ApplicationsPage() {
         </Link>
       </div>
 
-      {isDemo && !loading && !error && (
+      {isShowingDemoData && !loading && !error && (
         <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-sm font-semibold text-emerald-900">Demo applications are showing so the product does not feel empty.</p>
-          <p className="mt-1 text-sm text-emerald-700">Add your first real application and these examples will disappear automatically.</p>
+          <p className="text-sm font-semibold text-emerald-900">{isDemo ? 'Recruiter demo applications are showing from the same data used on the dashboard.' : 'Demo applications are showing so the product does not feel empty.'}</p>
+          <p className="mt-1 text-sm text-emerald-700">{isDemo ? 'Offers, interviews, deadlines, recruiter contacts, and follow-ups stay synchronized across the demo.' : 'Add your first real application and these examples will disappear automatically.'}</p>
         </div>
       )}
 
@@ -215,7 +224,7 @@ function ApplicationsPage() {
                 <td className="px-4 py-3">{row.applicationSource || 'Not set'}</td>
                 <td className="px-4 py-3">{formatSalary(row)}</td>
                 <td className="px-4 py-3">
-                  {isDemo ? (
+                  {isShowingDemoData ? (
                     <span className="font-semibold text-slate-400">Demo</span>
                   ) : (
                     <Link className="font-semibold text-emerald-700" to={`/applications/${row._id}`}>

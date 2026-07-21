@@ -176,15 +176,32 @@ export const demoDocuments = [
   },
 ]
 
+const followUpStatuses = [
+  APPLICATION_STATUSES.PENDING,
+  APPLICATION_STATUSES.APPLIED,
+  APPLICATION_STATUSES.ASSESSMENT,
+  APPLICATION_STATUSES.INTERVIEW,
+]
+
+export const demoFollowUps = demoApplications
+  .filter((application) => application.followUpDate && followUpStatuses.includes(application.status))
+  .map((application) => ({
+    _id: `${application._id}-follow-up`,
+    companyName: application.companyName,
+    jobTitle: application.jobTitle,
+    followUpDate: application.followUpDate,
+    message: `${application.companyName} - ${application.jobTitle} needs a recruiter follow-up.`,
+  }))
+
 export const demoNotifications = [
-  {
-    id: 'demo-notification-fiberone-followup',
+  ...demoFollowUps.map((application) => ({
+    id: `demo-notification-${application._id}`,
     type: 'follow-up',
-    title: 'Follow up with FiberOne',
-    message: 'You applied to FiberOne 7 days ago. Send a follow-up.',
-    dueDate: '2026-06-06',
+    title: `Follow up with ${application.companyName}`,
+    message: application.message,
+    dueDate: application.followUpDate,
     href: '/applications',
-  },
+  })),
   {
     id: 'demo-notification-cwg-interview',
     type: 'interview',
@@ -192,14 +209,6 @@ export const demoNotifications = [
     message: 'Portfolio Review for UI/UX Intern is scheduled for 10:00 AM.',
     dueDate: '2026-06-10',
     href: '/interviews',
-  },
-  {
-    id: 'demo-notification-andela-assessment',
-    type: 'deadline',
-    title: 'Andela assessment reminder',
-    message: 'Junior Developer assessment is active. Review the requirements before the deadline.',
-    dueDate: '2026-06-10',
-    href: '/applications',
   },
   {
     id: 'demo-notification-cv',
@@ -218,7 +227,7 @@ export const demoAnalytics = {
   offers: 1,
   rejections: 1,
   ghosted: 0,
-  followUpsDue: 1,
+  followUpsDue: demoFollowUps.length,
   responseRate: 67,
   offerRate: 17,
   interviewConversionRate: 50,

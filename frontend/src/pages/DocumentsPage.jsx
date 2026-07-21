@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '../services/api'
 import { documentService } from '../services/documentService'
 import { formatDate } from '../utils/applications'
 import { useApplications } from '../hooks/useApplications'
+import { isDemoSession } from '../utils/authStorage'
 import { demoApplications, demoDocuments } from '../utils/demoData'
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024
@@ -14,6 +15,7 @@ function DocumentsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isDemo, setIsDemo] = useState(() => isDemoSession())
   const {
     formState: { errors },
     handleSubmit,
@@ -22,11 +24,18 @@ function DocumentsPage() {
   } = useForm()
   const { showToast } = useToast()
   const { data: applications = [] } = useApplications()
-  const visibleApplications = applications.length ? applications : demoApplications
-  const visibleDocuments = documents.length ? documents : demoDocuments
-  const isDemo = documents.length === 0
+  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
+  const visibleDocuments = isDemo ? demoDocuments : documents.length ? documents : demoDocuments
 
   async function refreshDocuments() {
+    if (isDemoSession()) {
+      setIsDemo(true)
+      setDocuments(demoDocuments)
+      setError('')
+      setLoading(false)
+      return
+    }
+
     try {
       const { data } = await documentService.getAll()
       setDocuments(data)
@@ -39,6 +48,13 @@ function DocumentsPage() {
 
   useEffect(() => {
     async function fetchDocuments() {
+      if (isDemoSession()) {
+        setIsDemo(true)
+        setDocuments(demoDocuments)
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await documentService.getAll()
         setDocuments(data)
@@ -53,6 +69,13 @@ function DocumentsPage() {
   }, [])
 
   async function onSubmit(values) {
+    if (isDemo) {
+      const message = 'Demo documents are read-only so CV usage stays synchronized.'
+      setSuccess(message)
+      setError('')
+      showToast(message)
+      return
+    }
     const file = values.document?.[0]
     const uploadData = new FormData()
     uploadData.append('document', file)
@@ -79,6 +102,10 @@ function DocumentsPage() {
   }
 
   async function handleDelete(id) {
+    if (isDemo) {
+      showToast('Demo documents are read-only')
+      return
+    }
     try {
       await documentService.remove(id)
       setSuccess('Document deleted successfully')
@@ -147,7 +174,7 @@ function DocumentsPage() {
             })}
           />
           <div className="flex items-end">
-            <Button type="submit" className="w-full md:w-auto">Upload</Button>
+            <Button type="submit" className="w-full md:w-auto">{isDemo ? 'Preview only' : 'Upload'}</Button>
           </div>
         </form>
         {error && <p className="mt-4 text-sm font-medium text-rose-600">{error}</p>}

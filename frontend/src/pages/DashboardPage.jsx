@@ -23,7 +23,7 @@ import {
   isThisWeek,
   isToday,
 } from '../utils/applications'
-import { demoAnalytics, demoApplications, demoDocuments, demoInterviews } from '../utils/demoData'
+import { demoAnalytics, demoApplications, demoDocuments, demoFollowUps, demoInterviews } from '../utils/demoData'
 
 function DashboardPage() {
   const [analytics, setAnalytics] = useState(null)
@@ -80,6 +80,7 @@ function DashboardPage() {
   const visibleApplications = isDemo ? demoApplications : hasApplications ? applications : demoApplications
   const visibleInterviews = isDemo ? demoInterviews : hasInterviews ? interviews : demoInterviews
   const visibleDocuments = isDemo ? demoDocuments : hasDocuments ? documents : demoDocuments
+  const recentApplications = [...visibleApplications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   const today = getPlainDate(new Date())
   const reminders = visibleApplications.filter((application) => {
@@ -101,16 +102,7 @@ function DashboardPage() {
     return false
   })
 
-  const visibleReminders = reminders.length
-    ? reminders
-    : [
-        {
-          _id: 'demo-reminder-fiberone',
-          companyName: 'FiberOne',
-          jobTitle: 'Frontend Intern',
-          message: 'You applied to FiberOne 7 days ago. Send a follow-up.',
-        },
-      ]
+  const visibleReminders = isDemo ? demoFollowUps : reminders.length ? reminders : demoFollowUps
 
   const upcomingInterviews = visibleInterviews.filter((interview) => isToday(interview.date) || isThisWeek(interview.date))
   const interviewsToShow = upcomingInterviews.length ? upcomingInterviews : visibleInterviews
@@ -214,7 +206,7 @@ function DashboardPage() {
           </div>
           <Table
             columns={['Company', 'Role', 'Status', 'Follow-up', 'Action']}
-            rows={visibleApplications.slice(0, 5)}
+            rows={recentApplications.slice(0, 5)}
             renderRow={(row) => (
               <tr key={row._id}>
                 <td className="px-4 py-3 font-semibold text-slate-950">{row.companyName}</td>

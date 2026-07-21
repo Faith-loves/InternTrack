@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Badge, Card, EmptyState, Loader } from '../components'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatDate } from '../utils/applications'
+import { isDemoSession } from '../utils/authStorage'
 import { demoNotifications } from '../utils/demoData'
 
 const tones = {
@@ -13,8 +14,8 @@ const tones = {
 
 function NotificationsPage() {
   const { data: notifications = [], isLoading, error } = useNotifications()
-  const visibleNotifications = notifications.length ? notifications : demoNotifications
-  const isDemo = notifications.length === 0
+  const isDemo = isDemoSession()
+  const visibleNotifications = isDemo ? demoNotifications : notifications.length ? notifications : demoNotifications
 
   return (
     <div className="space-y-5">
