@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import { Badge, Card, EmptyState, Loader } from '../components'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatDate } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
 import { demoNotifications } from '../utils/demoData'
+import { getDemoNotifications, getDemoWorkspace } from '../utils/demoWorkspace'
 
 const tones = {
   'follow-up': 'warning',
@@ -15,7 +16,7 @@ const tones = {
 function NotificationsPage() {
   const { data: notifications = [], isLoading, error } = useNotifications()
   const isDemo = isDemoSession()
-  const visibleNotifications = isDemo ? demoNotifications : notifications.length ? notifications : demoNotifications
+  const visibleNotifications = isDemo ? getDemoNotifications(getDemoWorkspace()) : notifications.length ? notifications : demoNotifications
 
   return (
     <div className="space-y-5">
@@ -54,3 +55,4 @@ function NotificationsPage() {
 }
 
 export default NotificationsPage
+

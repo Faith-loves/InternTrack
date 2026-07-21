@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Badge,
@@ -23,7 +23,8 @@ import {
   isThisWeek,
   isToday,
 } from '../utils/applications'
-import { demoAnalytics, demoApplications, demoDocuments, demoFollowUps, demoInterviews } from '../utils/demoData'
+import { demoApplications, demoDocuments, demoInterviews } from '../utils/demoData'
+import { getDemoAnalytics, getDemoFollowUps, getDemoWorkspace } from '../utils/demoWorkspace'
 
 function DashboardPage() {
   const [analytics, setAnalytics] = useState(null)
@@ -38,12 +39,13 @@ function DashboardPage() {
   useEffect(() => {
     async function fetchDashboard() {
       if (isDemoSession()) {
+        const workspace = getDemoWorkspace()
         setIsDemo(true)
-        setAnalytics(demoAnalytics)
-        setApplications(demoApplications)
-        setInterviews(demoInterviews)
-        setDocuments(demoDocuments)
-        setUser(getStoredUser())
+        setAnalytics(getDemoAnalytics(workspace))
+        setApplications(workspace.applications)
+        setInterviews(workspace.interviews)
+        setDocuments(workspace.documents)
+        setUser(workspace.user)
         setLoading(false)
         return
       }
@@ -77,9 +79,9 @@ function DashboardPage() {
   const hasInterviews = !isDemo && interviews.length > 0
   const hasDocuments = !isDemo && documents.length > 0
   const isShowingDemoData = isDemo || !hasApplications
-  const visibleApplications = isDemo ? demoApplications : hasApplications ? applications : demoApplications
-  const visibleInterviews = isDemo ? demoInterviews : hasInterviews ? interviews : demoInterviews
-  const visibleDocuments = isDemo ? demoDocuments : hasDocuments ? documents : demoDocuments
+  const visibleApplications = isDemo ? applications : hasApplications ? applications : demoApplications
+  const visibleInterviews = isDemo ? interviews : hasInterviews ? interviews : demoInterviews
+  const visibleDocuments = isDemo ? documents : hasDocuments ? documents : demoDocuments
   const recentApplications = [...visibleApplications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
   const today = getPlainDate(new Date())
@@ -102,17 +104,17 @@ function DashboardPage() {
     return false
   })
 
-  const visibleReminders = isDemo ? demoFollowUps : reminders.length ? reminders : demoFollowUps
+  const visibleReminders = isDemo ? getDemoFollowUps(visibleApplications) : reminders
 
   const upcomingInterviews = visibleInterviews.filter((interview) => isToday(interview.date) || isThisWeek(interview.date))
   const interviewsToShow = upcomingInterviews.length ? upcomingInterviews : visibleInterviews
 
-  const totalApplications = isShowingDemoData ? demoAnalytics.totalApplications : applications.length
-  const interviewsScheduled = isDemo || !hasInterviews ? demoAnalytics.interviews : interviews.length
+  const totalApplications = isShowingDemoData ? analytics?.totalApplications || 0 : applications.length
+  const interviewsScheduled = isShowingDemoData ? analytics?.interviews || 0 : interviews.length
   const offersReceived = hasApplications
     ? applications.filter((application) => application.status === APPLICATION_STATUSES.OFFER).length
-    : demoAnalytics.offers
-  const followUpsDue = isShowingDemoData ? demoAnalytics.followUpsDue : reminders.length
+    : analytics?.offers || 0
+  const followUpsDue = isShowingDemoData ? analytics?.followUpsDue || 0 : reminders.length
 
   const statCards = [
     ['Total Applications', totalApplications, 'bg-emerald-50 text-emerald-700 border-emerald-100'],
@@ -130,9 +132,9 @@ function DashboardPage() {
     ['Rejected', APPLICATION_STATUSES.REJECTED],
   ]
 
-  const responseRate = isShowingDemoData ? demoAnalytics.responseRate : analytics?.responseRate || 0
-  const offerRate = isShowingDemoData ? demoAnalytics.offerRate : analytics?.offerRate || 0
-  const interviewRate = isShowingDemoData ? demoAnalytics.interviewConversionRate : analytics?.interviewConversionRate || 0
+  const responseRate = analytics?.responseRate || 0
+  const offerRate = analytics?.offerRate || 0
+  const interviewRate = analytics?.interviewConversionRate || 0
 
   const quickActions = [
     ['Add Application', 'Save a new role, recruiter, date, and status.', '/applications/add', 'bg-emerald-500'],
@@ -384,3 +386,5 @@ function DashboardPage() {
 }
 
 export default DashboardPage
+
+

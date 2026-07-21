@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Card, EmptyState, Loader } from '../components'
 import { analyticsService } from '../services/analyticsService'
 import { getApiErrorMessage } from '../services/api'
 import { getStatusLabel, statusOptions } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
 import { demoAnalytics } from '../utils/demoData'
+import { getDemoAnalytics, getDemoWorkspace } from '../utils/demoWorkspace'
 
 function AnalyticsPage() {
   const [analytics, setAnalytics] = useState(null)
@@ -16,7 +17,7 @@ function AnalyticsPage() {
     async function fetchAnalytics() {
       if (isDemoSession()) {
         setIsDemo(true)
-        setAnalytics(demoAnalytics)
+        setAnalytics(getDemoAnalytics(getDemoWorkspace()))
         setLoading(false)
         return
       }
@@ -143,3 +144,4 @@ function AnalyticsPage() {
 }
 
 export default AnalyticsPage
+

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button, Card, Input, Loader, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
 import { authService } from '../services/authService'
-import { updateStoredUser } from '../utils/authStorage'
+import { getStoredUser, isDemoSession, updateStoredUser } from '../utils/authStorage'
+import { getDemoWorkspace, updateDemoUser } from '../utils/demoWorkspace'
 
 function SettingsPage() {
   const [settings, setSettings] = useState(null)
@@ -17,9 +18,26 @@ function SettingsPage() {
     reset,
   } = useForm()
   const { showToast } = useToast()
+  const isDemo = isDemoSession()
 
   useEffect(() => {
     async function fetchSettings() {
+      if (isDemo) {
+        const user = getDemoWorkspace().user || getStoredUser()
+        setSettings(user)
+        reset({
+          fullName: user.fullName || '',
+          email: user.email || '',
+          preferredRole: user.preferredRole || '',
+          location: user.location || '',
+          portfolioLink: user.portfolioLink || '',
+          linkedinLink: user.linkedinLink || '',
+          githubLink: user.githubLink || '',
+        })
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await authService.getCurrentUser()
         setSettings(data.user)
@@ -40,7 +58,7 @@ function SettingsPage() {
     }
 
     fetchSettings()
-  }, [reset])
+  }, [isDemo, reset])
 
   async function onSubmit(values) {
     const payload = {
@@ -54,9 +72,9 @@ function SettingsPage() {
     }
 
     try {
-      const { data } = await authService.updateProfile(payload)
-      setSettings(data.user)
-      updateStoredUser(data.user)
+      const updatedUser = isDemo ? updateDemoUser(payload).user : (await authService.updateProfile(payload)).data.user
+      setSettings(updatedUser)
+      updateStoredUser(updatedUser)
       setSaved(true)
       setError('')
       showToast('Settings saved')
@@ -143,3 +161,4 @@ function SettingsPage() {
 }
 
 export default SettingsPage
+

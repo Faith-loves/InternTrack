@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+﻿import { useQuery } from '@tanstack/react-query'
 import { notificationService } from '../services/notificationService'
 import { isDemoSession } from '../utils/authStorage'
-import { demoNotifications } from '../utils/demoData'
+import { getDemoNotifications, getDemoWorkspace } from '../utils/demoWorkspace'
 
 export function useNotifications() {
   const isDemo = isDemoSession()
@@ -9,7 +9,7 @@ export function useNotifications() {
   return useQuery({
     queryKey: ['notifications', isDemo ? 'demo' : 'live'],
     queryFn: async () => {
-      if (isDemo) return demoNotifications
+      if (isDemo) return getDemoNotifications(getDemoWorkspace())
 
       const { data } = await notificationService.getAll()
       return data

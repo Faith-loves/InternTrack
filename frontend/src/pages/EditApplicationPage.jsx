@@ -1,24 +1,41 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApplicationForm, Button, Card, Loader, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
 import { applicationService } from '../services/applicationService'
+import { documentService } from '../services/documentService'
+import { isDemoSession } from '../utils/authStorage'
+import { getDemoWorkspace, updateDemoApplication } from '../utils/demoWorkspace'
 
 function EditApplicationPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [application, setApplication] = useState(null)
+  const [cvOptions, setCvOptions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
   const { showToast } = useToast()
+  const isDemo = isDemoSession()
 
   useEffect(() => {
     async function fetchApplication() {
+      if (isDemo) {
+        const workspace = getDemoWorkspace()
+        setApplication(workspace.applications.find((item) => item._id === id) || null)
+        setCvOptions(workspace.documents.map((document) => ({ value: document.fileName, label: document.fileName })))
+        setLoading(false)
+        return
+      }
+
       try {
-        const { data } = await applicationService.getById(id)
-        setApplication(data)
+        const [{ data: applicationData }, { data: documentsData }] = await Promise.all([
+          applicationService.getById(id),
+          documentService.getAll().catch(() => ({ data: [] })),
+        ])
+        setApplication(applicationData)
+        setCvOptions(documentsData.map((document) => ({ value: document.fileName, label: document.fileName })))
       } catch {
         setApplication(null)
       } finally {
@@ -27,11 +44,20 @@ function EditApplicationPage() {
     }
 
     fetchApplication()
-  }, [id])
+  }, [id, isDemo])
 
   async function handleSubmit(updates) {
     try {
       setSaving(true)
+
+      if (isDemo) {
+        updateDemoApplication(id, updates)
+        sessionStorage.setItem('successMessage', 'Application updated successfully')
+        showToast('Application updated successfully')
+        navigate(`/applications/${id}`)
+        return
+      }
+
       await applicationService.update(id, updates)
       sessionStorage.setItem('successMessage', 'Application updated successfully')
       setSuccess('Application updated successfully')
@@ -70,7 +96,7 @@ function EditApplicationPage() {
       <Card className="p-5">
         {error && <p className="mb-4 text-sm font-medium text-rose-600">{error}</p>}
         {success && <p className="mb-4 text-sm font-medium text-emerald-700">{success}</p>}
-        <ApplicationForm initialValues={application} submitLabel={saving ? 'Updating...' : 'Update application'} onSubmit={handleSubmit} />
+        <ApplicationForm initialValues={application} submitLabel={saving ? 'Updating...' : 'Update application'} cvOptions={cvOptions} onSubmit={handleSubmit} />
       </Card>
     </div>
   )

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApplicationTimeline, Badge, Button, Card, Loader, Modal, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
 import { applicationService } from '../services/applicationService'
+import { isDemoSession } from '../utils/authStorage'
+import { deleteDemoApplication, getDemoWorkspace } from '../utils/demoWorkspace'
 import { formatDate, formatSalary, getJobTypeLabel, getStatusLabel, getStatusTone } from '../utils/applications'
 
 function DetailItem({ label, value }) {
@@ -27,6 +29,7 @@ function ApplicationDetailsPage() {
     return message || ''
   })
   const { showToast } = useToast()
+  const isDemo = isDemoSession()
 
   useEffect(() => {
     if (success) {
@@ -36,6 +39,12 @@ function ApplicationDetailsPage() {
 
   useEffect(() => {
     async function fetchApplication() {
+      if (isDemo) {
+        setApplication(getDemoWorkspace().applications.find((item) => item._id === id) || null)
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await applicationService.getById(id)
         setApplication(data)
@@ -47,10 +56,17 @@ function ApplicationDetailsPage() {
     }
 
     fetchApplication()
-  }, [id])
+  }, [id, isDemo])
 
   async function handleDelete() {
     try {
+      if (isDemo) {
+        deleteDemoApplication(id)
+        sessionStorage.setItem('successMessage', 'Application deleted successfully')
+        showToast('Application deleted successfully')
+        navigate('/applications')
+        return
+      }
       await applicationService.remove(id)
       sessionStorage.setItem('successMessage', 'Application deleted successfully')
       showToast('Application deleted successfully')
@@ -188,3 +204,4 @@ Best regards,`
 }
 
 export default ApplicationDetailsPage
+

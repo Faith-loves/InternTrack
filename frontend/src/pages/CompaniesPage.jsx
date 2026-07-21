@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button, Card, EmptyState, Input, Loader, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
 import { companyService } from '../services/companyService'
+import { isDemoSession } from '../utils/authStorage'
+import { createDemoCompany, getDemoWorkspace } from '../utils/demoWorkspace'
 
 function CompaniesPage() {
   const [companies, setCompanies] = useState([])
@@ -16,8 +18,16 @@ function CompaniesPage() {
     reset,
   } = useForm()
   const { showToast } = useToast()
+  const isDemo = isDemoSession()
 
   async function refreshCompanies() {
+    if (isDemo) {
+      setCompanies(getDemoWorkspace().companies)
+      setError('')
+      setLoading(false)
+      return
+    }
+
     try {
       const { data } = await companyService.getAll()
       setCompanies(data)
@@ -30,6 +40,13 @@ function CompaniesPage() {
 
   useEffect(() => {
     async function fetchCompanies() {
+      if (isDemo) {
+        setCompanies(getDemoWorkspace().companies)
+        setError('')
+        setLoading(false)
+        return
+      }
+
       try {
         const { data } = await companyService.getAll()
         setCompanies(data)
@@ -41,7 +58,7 @@ function CompaniesPage() {
     }
 
     fetchCompanies()
-  }, [])
+  }, [isDemo])
 
   async function onSubmit(values) {
     const payload = {
@@ -56,12 +73,18 @@ function CompaniesPage() {
     }
 
     try {
-      await companyService.create(payload)
+      if (isDemo) {
+        const workspace = createDemoCompany(payload)
+        setCompanies(workspace.companies)
+      } else {
+        await companyService.create(payload)
+        await refreshCompanies()
+      }
+
       reset()
       setSuccess('Company created successfully')
       setError('')
       showToast('Company created successfully')
-      refreshCompanies()
     } catch (err) {
       const message = getApiErrorMessage(err, 'Failed to create company')
       setError(message)
@@ -164,3 +187,4 @@ function CompaniesPage() {
 }
 
 export default CompaniesPage
+

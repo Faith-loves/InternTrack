@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+﻿import { useQuery } from '@tanstack/react-query'
 import { applicationService } from '../services/applicationService'
 import { isDemoSession } from '../utils/authStorage'
-import { demoApplications } from '../utils/demoData'
+import { getDemoWorkspace } from '../utils/demoWorkspace'
 
 export function useApplications() {
   const isDemo = isDemoSession()
@@ -9,7 +9,7 @@ export function useApplications() {
   return useQuery({
     queryKey: ['applications', isDemo ? 'demo' : 'live'],
     queryFn: async () => {
-      if (isDemo) return demoApplications
+      if (isDemo) return getDemoWorkspace().applications
 
       const { data } = await applicationService.getAll()
       return data

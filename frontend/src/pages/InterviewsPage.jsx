@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { Badge, Button, Card, EmptyState, Input, Loader, Select, useToast } from '../components'
@@ -8,6 +8,7 @@ import { interviewService } from '../services/interviewService'
 import { formatDate } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
 import { demoApplications, demoInterviews } from '../utils/demoData'
+import { createDemoInterview, getDemoWorkspace, updateDemoInterview } from '../utils/demoWorkspace'
 
 function InterviewsPage() {
   const [interviews, setInterviews] = useState([])
@@ -24,14 +25,14 @@ function InterviewsPage() {
   } = useForm()
   const { showToast } = useToast()
   const queryClient = useQueryClient()
-  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
-  const visibleInterviews = isDemo ? demoInterviews : interviews.length ? interviews : demoInterviews
+  const visibleApplications = isDemo ? applications : applications.length ? applications : demoApplications
+  const visibleInterviews = isDemo ? interviews : interviews.length ? interviews : demoInterviews
 
   async function refreshData() {
     if (isDemoSession()) {
       setIsDemo(true)
-      setInterviews(demoInterviews)
-      setApplications(demoApplications)
+      setInterviews(getDemoWorkspace().interviews)
+      setApplications(getDemoWorkspace().applications)
       setError('')
       setLoading(false)
       return
@@ -55,8 +56,8 @@ function InterviewsPage() {
     async function fetchData() {
       if (isDemoSession()) {
         setIsDemo(true)
-        setInterviews(demoInterviews)
-        setApplications(demoApplications)
+        setInterviews(getDemoWorkspace().interviews)
+        setApplications(getDemoWorkspace().applications)
         setLoading(false)
         return
       }
@@ -79,13 +80,6 @@ function InterviewsPage() {
   }, [])
 
   async function onSubmit(values) {
-    if (isDemo) {
-      const message = 'Demo interviews are read-only so recruiter preview data stays synchronized.'
-      setSuccess(message)
-      setError('')
-      showToast(message)
-      return
-    }
     const selectedApplication = visibleApplications.find((application) => application._id === values.applicationId)
     const payload = {
       applicationId: values.applicationId,
@@ -108,13 +102,20 @@ function InterviewsPage() {
     }
 
     try {
-      await interviewService.create(payload)
+      if (isDemo) {
+        const workspace = createDemoInterview(payload)
+        setInterviews(workspace.interviews)
+        setApplications(workspace.applications)
+      } else {
+        await interviewService.create(payload)
+        refreshData()
+      }
+
       reset()
       setSuccess('Interview created successfully')
       setError('')
       showToast('Interview created successfully')
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      refreshData()
     } catch (err) {
       const message = getApiErrorMessage(err, 'Failed to create interview')
       setError(message)
@@ -124,14 +125,16 @@ function InterviewsPage() {
   }
 
   async function updateInterview(id, updates) {
-    if (isDemo) {
-      showToast('Demo checklist is read-only')
-      return
-    }
     try {
-      await interviewService.update(id, updates)
+      if (isDemo) {
+        const workspace = updateDemoInterview(id, updates)
+        setInterviews(workspace.interviews)
+      } else {
+        await interviewService.update(id, updates)
+        refreshData()
+      }
+
       showToast('Interview updated')
-      refreshData()
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     } catch (err) {
       showToast(getApiErrorMessage(err, 'Failed to update interview'), 'error')
@@ -258,7 +261,7 @@ Best regards,`
             />
           </label>
           <div className="md:col-span-2">
-            <Button type="submit">{isDemo ? 'Preview only' : 'Save interview'}</Button>
+            <Button type="submit">Save interview</Button>
           </div>
         </form>
         {error && <p className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
@@ -336,3 +339,6 @@ Best regards,`
 }
 
 export default InterviewsPage
+
+
+

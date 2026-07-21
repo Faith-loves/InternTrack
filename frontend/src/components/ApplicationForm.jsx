@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form'
+﻿import { useForm } from 'react-hook-form'
 import Button from './Button'
 import Input from './Input'
 import Select from './Select'
@@ -40,7 +40,7 @@ const normalizeInitialValues = (values) => ({
   applicationDeadline: toDateInputValue(values.applicationDeadline),
 })
 
-function ApplicationForm({ initialValues = emptyApplication, submitLabel, onSubmit }) {
+function ApplicationForm({ initialValues = emptyApplication, submitLabel, onSubmit, cvOptions = [] }) {
   const {
     formState: { errors },
     handleSubmit,
@@ -123,7 +123,7 @@ function ApplicationForm({ initialValues = emptyApplication, submitLabel, onSubm
           },
         })}
       />
-      <Input id="cvUsed" label="CV used" placeholder="Frontend Resume v2.pdf" {...register('cvUsed')} />
+      <Select id="cvUsed" label="CV used" options={[{ value: '', label: cvOptions.length ? 'Select CV' : 'No CV saved yet' }, ...cvOptions]} {...register('cvUsed')} />
       <Input
         id="salaryMin"
         label="Salary min"
@@ -188,3 +188,4 @@ function ApplicationForm({ initialValues = emptyApplication, submitLabel, onSubm
 }
 
 export default ApplicationForm
+

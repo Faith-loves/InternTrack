@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button, Card, EmptyState, Input, Loader, Select, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
@@ -7,6 +7,7 @@ import { formatDate } from '../utils/applications'
 import { useApplications } from '../hooks/useApplications'
 import { isDemoSession } from '../utils/authStorage'
 import { demoApplications, demoDocuments } from '../utils/demoData'
+import { createDemoDocument, deleteDemoDocument, getDemoWorkspace } from '../utils/demoWorkspace'
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024
 
@@ -21,16 +22,17 @@ function DocumentsPage() {
     handleSubmit,
     register,
     reset,
-  } = useForm()
+    setValue,
+  } = useForm({ defaultValues: { documentType: 'CV' } })
   const { showToast } = useToast()
   const { data: applications = [] } = useApplications()
-  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
-  const visibleDocuments = isDemo ? demoDocuments : documents.length ? documents : demoDocuments
+  const visibleApplications = isDemo ? getDemoWorkspace().applications : applications.length ? applications : demoApplications
+  const visibleDocuments = isDemo ? documents : documents.length ? documents : demoDocuments
 
   async function refreshDocuments() {
     if (isDemoSession()) {
       setIsDemo(true)
-      setDocuments(demoDocuments)
+      setDocuments(getDemoWorkspace().documents)
       setError('')
       setLoading(false)
       return
@@ -48,9 +50,9 @@ function DocumentsPage() {
 
   useEffect(() => {
     async function fetchDocuments() {
-      if (isDemoSession()) {
-        setIsDemo(true)
-        setDocuments(demoDocuments)
+      if (isDemo) {
+        setDocuments(getDemoWorkspace().documents)
+        setError('')
         setLoading(false)
         return
       }
@@ -66,29 +68,40 @@ function DocumentsPage() {
     }
 
     fetchDocuments()
-  }, [])
+  }, [isDemo])
 
   async function onSubmit(values) {
-    if (isDemo) {
-      const message = 'Demo documents are read-only so CV usage stays synchronized.'
-      setSuccess(message)
-      setError('')
-      showToast(message)
-      return
-    }
     const file = values.document?.[0]
-    const uploadData = new FormData()
-    uploadData.append('document', file)
-    uploadData.append('fileName', values.fileName.trim())
-    uploadData.append('documentType', values.documentType)
-    uploadData.append('cvType', values.documentType)
-    if (values.linkedApplicationId) {
-      uploadData.append('linkedApplicationId', values.linkedApplicationId)
-    }
 
     try {
+      if (isDemo) {
+        const fileName = values.fileName.trim() || file?.name || 'Uploaded CV'
+        const linkedApplication = visibleApplications.find((application) => application._id === values.linkedApplicationId)
+        const workspace = createDemoDocument({
+          fileName,
+          documentType: values.documentType,
+          cvType: values.documentType,
+          linkedApplicationId: linkedApplication ? { companyName: linkedApplication.companyName, jobTitle: linkedApplication.jobTitle } : null,
+        })
+        setDocuments(workspace.documents)
+        reset({ documentType: 'CV' })
+        setSuccess('Document uploaded successfully')
+        setError('')
+        showToast('Document uploaded successfully')
+        return
+      }
+
+      const uploadData = new FormData()
+      uploadData.append('document', file)
+      uploadData.append('fileName', values.fileName.trim())
+      uploadData.append('documentType', values.documentType)
+      uploadData.append('cvType', values.documentType)
+      if (values.linkedApplicationId) {
+        uploadData.append('linkedApplicationId', values.linkedApplicationId)
+      }
+
       await documentService.upload(uploadData)
-      reset()
+      reset({ documentType: 'CV' })
       setSuccess('Document uploaded successfully')
       setError('')
       showToast('Document uploaded successfully')
@@ -103,9 +116,14 @@ function DocumentsPage() {
 
   async function handleDelete(id) {
     if (isDemo) {
-      showToast('Demo documents are read-only')
+      const workspace = deleteDemoDocument(id)
+      setDocuments(workspace.documents)
+      setSuccess('Document deleted successfully')
+      setError('')
+      showToast('Document deleted successfully')
       return
     }
+
     try {
       await documentService.remove(id)
       setSuccess('Document deleted successfully')
@@ -167,6 +185,10 @@ function DocumentsPage() {
             type="file"
             error={errors.document?.message}
             {...register('document', {
+              onChange: (event) => {
+                const file = event.target.files?.[0]
+                if (file) setValue('fileName', file.name, { shouldDirty: true, shouldValidate: true })
+              },
               validate: {
                 required: (files) => files?.length > 0 || 'File is required',
                 size: (files) => !files?.[0] || files[0].size <= MAX_UPLOAD_SIZE || 'File size must be 5MB or less',
@@ -174,7 +196,7 @@ function DocumentsPage() {
             })}
           />
           <div className="flex items-end">
-            <Button type="submit" className="w-full md:w-auto">{isDemo ? 'Preview only' : 'Upload'}</Button>
+            <Button type="submit" className="w-full md:w-auto">Upload</Button>
           </div>
         </form>
         {error && <p className="mt-4 text-sm font-medium text-rose-600">{error}</p>}
@@ -203,11 +225,9 @@ function DocumentsPage() {
                 <span className="w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                   {isDemo ? 'Demo CV' : document.documentType || document.cvType || 'Document'}
                 </span>
-                {!isDemo && (
-                  <Button variant="danger" className="w-full sm:w-auto" onClick={() => handleDelete(document._id)}>
-                    Delete
-                  </Button>
-                )}
+                <Button variant="danger" className="w-full sm:w-auto" onClick={() => handleDelete(document._id)}>
+                  Delete
+                </Button>
               </div>
             </div>
           ))}
@@ -220,3 +240,4 @@ function DocumentsPage() {
 }
 
 export default DocumentsPage
+

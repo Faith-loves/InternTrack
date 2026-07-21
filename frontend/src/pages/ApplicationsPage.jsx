@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, EmptyState, Input, Select, Table, TableSkeleton, useToast } from '../components'
 import { getApiErrorMessage } from '../services/api'
@@ -6,6 +6,7 @@ import { applicationService } from '../services/applicationService'
 import { applicationSourceOptions, formatDate, formatSalary, getStatusLabel, getStatusTone, statusOptions } from '../utils/applications'
 import { isDemoSession } from '../utils/authStorage'
 import { demoApplications } from '../utils/demoData'
+import { getDemoWorkspace } from '../utils/demoWorkspace'
 import { getSavedFilters, saveFilter } from '../utils/savedFilters'
 
 function ApplicationsPage() {
@@ -37,7 +38,7 @@ function ApplicationsPage() {
     async function fetchApplications() {
       if (isDemoSession()) {
         setIsDemo(true)
-        setApplications(demoApplications)
+        setApplications(getDemoWorkspace().applications)
         setLoading(false)
         return
       }
@@ -57,7 +58,7 @@ function ApplicationsPage() {
     fetchApplications()
   }, [showToast])
 
-  const visibleApplications = isDemo ? demoApplications : applications.length ? applications : demoApplications
+  const visibleApplications = isDemo ? applications : applications.length ? applications : demoApplications
   const isShowingDemoData = isDemo || applications.length === 0
 
   const filteredApplications = useMemo(() => {
@@ -224,12 +225,12 @@ function ApplicationsPage() {
                 <td className="px-4 py-3">{row.applicationSource || 'Not set'}</td>
                 <td className="px-4 py-3">{formatSalary(row)}</td>
                 <td className="px-4 py-3">
-                  {isShowingDemoData ? (
-                    <span className="font-semibold text-slate-400">Demo</span>
-                  ) : (
+                  {!isShowingDemoData || isDemo ? (
                     <Link className="font-semibold text-emerald-700" to={`/applications/${row._id}`}>
                       View
                     </Link>
+                  ) : (
+                    <span className="font-semibold text-slate-400">Demo</span>
                   )}
                 </td>
               </tr>
@@ -257,3 +258,5 @@ function ApplicationsPage() {
 }
 
 export default ApplicationsPage
+
+
